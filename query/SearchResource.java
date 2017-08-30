@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,6 +41,7 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.hits.HitsProcessorRegistryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 /**
@@ -237,6 +239,18 @@ public class SearchResource {
 			}
 		}
 
+		try {
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(request);
+			
+			Locale requestLocale = PortalUtil.getLocale(request);
+			
+			MyCTLocalServiceHelperUtil.fetchContent(searchResult, serviceContext, requestLocale);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			// log error
+		}
+		
 		MyCTSearchHelperUtil.doSearchSort(searchResult);
 
 		try {
@@ -248,14 +262,6 @@ public class SearchResource {
 			_log.warn("Incorrect values for Pagination URL params {start,end}; skipping pagination " + e.toString());
 		}
 
-		try {
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(request);
-			MyCTLocalServiceHelperUtil.fetchContent(searchResult, serviceContext);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			// log error
-		}
 		return mapper.writeValueAsString(searchResult);
 	}
 
